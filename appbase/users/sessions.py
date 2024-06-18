@@ -1,4 +1,5 @@
 import redis
+
 try:
     import _pickle as pickle
 except:
@@ -15,16 +16,16 @@ rconn = redis.Redis(
     host=settings.SESSIONS_DB_HOST,
     port=settings.SESSIONS_DB_PORT,
     password=settings.SESSIONS_DB_PASSWORD,
-    db=settings.SESSIONS_DB_NO
-    )
+    db=settings.SESSIONS_DB_NO,
+)
 
-_sep = ':'
-session_key = ('session' + _sep).__add__
-rev_lookup_prefix = 'uid' + _sep
+_sep = ":"
+session_key = ("session" + _sep).__add__
+rev_lookup_prefix = "uid" + _sep
 rev_lookup_key = lambda uid: rev_lookup_prefix + str(uid)
 
 
-def create(uid='', groups=None, extras=None, ttl=(30 * 24 * 60 * 60)):
+def create(uid="", groups=None, extras=None, ttl=(30 * 24 * 60 * 60)):
     """
     groups: list
     extras (dict): each key-value pair of extras get stored into hset
@@ -37,7 +38,7 @@ def create(uid='', groups=None, extras=None, ttl=(30 * 24 * 60 * 60)):
     sid = gen_sid()
     key = session_key(sid)
 
-    session_dict = {'uid': uid, 'groups': groups or []}
+    session_dict = {"uid": uid, "groups": groups or []}
     if extras:
         session_dict.update(extras)
     session = {k: pickle.dumps(v) for k, v in session_dict.items()}
@@ -58,7 +59,7 @@ def create_for_api_key(uid, groups, extras=None, ttl=None):
     sid = gen_sid()
     key = session_key(sid)
 
-    session_dict = {'uid': uid, 'groups': groups}
+    session_dict = {"uid": uid, "groups": groups}
     if extras:
         session_dict.update(extras)
     session = {k: pickle.dumps(v) for k, v in session_dict.items()}
@@ -102,8 +103,8 @@ def sid2uidgroups(sid):
     """
     => uid (int), groups (list)
     """
-    session = get(sid, ['uid', 'groups'])
-    return session['uid'], session['groups']
+    session = get(sid, ["uid", "groups"])
+    return session["uid"], session["groups"]
 
 
 def update(sid, keyvalues):
@@ -144,16 +145,16 @@ def destroy_for(uid):
 
 
 def destroy_all():
-    keys = rconn.keys(session_key('*'))
+    keys = rconn.keys(session_key("*"))
     rconn.delete(*keys)
-    keys = rconn.keys(rev_lookup_prefix + '*')
+    keys = rconn.keys(rev_lookup_prefix + "*")
     rconn.delete(*keys)
 
 
 # Simple debugging helper
 def whoami():
-    sid = hasattr(context.current, 'sid') and context.current.sid
+    sid = hasattr(context.current, "sid") and context.current.sid
     uid, groups = None, None
     if sid:
         uid, groups = sid2uidgroups(sid)
-    return {'sid': sid, 'uid': uid, 'groups': groups}
+    return {"sid": sid, "uid": uid, "groups": groups}
