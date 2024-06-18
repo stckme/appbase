@@ -49,7 +49,7 @@ def check_settings(conf):
     print("Using {dev_settings_path}".format(**d))
 
 
-def configure_logger(name="appbase", logfile="app.log", debug=True):
+def configure_logger(name="appbase", logfile="app.log", debug=True, rotate=False):
     """
     name: logger name
     logfile: log file name (file will be created in logs dir)
@@ -60,9 +60,13 @@ def configure_logger(name="appbase", logfile="app.log", debug=True):
     if not os.path.exists(logdir):
         os.mkdir(logdir)
     logpath = os.path.join(logdir, logfile)
-    file_handler = RotatingFileHandler(
-        logpath, maxBytes=1024 * 1024 * 10, backupCount=100
-    )
+
+    if rotate:
+        file_handler = RotatingFileHandler(
+            logpath, maxBytes=1024 * 1024 * 10, backupCount=100
+        )
+    else:
+        file_handler = logging.FileHandler(logpath)
     file_handler.setLevel(level)
     formatter = logging.Formatter("[%(levelname)s] %(asctime)s: %(message)s")
     file_handler.setFormatter(formatter)
