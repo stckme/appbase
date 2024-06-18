@@ -8,7 +8,8 @@ from appbase.pw import BaseModel, CommonModel
 
 class User(CommonModel):
     class Meta:
-        db_table = 'users'
+        db_table = "users"
+
     name = CharField(null=True)
     email = CharField(null=False, unique=True, index=True)
     password = CharField(null=True)
@@ -20,5 +21,7 @@ class User(CommonModel):
 class GroupUser(BaseModel):
     created = DateTimeField(default=datetime.datetime.now)
     ctx = IntegerField(default=0)
-    user_id = ForeignKeyField(User, null=False, on_delete='CASCADE', db_column='user_id_id')
+    user_id = ForeignKeyField(
+        User, null=False, on_delete="CASCADE", db_column="user_id_id"
+    )
     group = CharField(null=False)

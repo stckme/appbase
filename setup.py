@@ -1,31 +1,31 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
-    name='appbase',
-    version='0.7.2',
+    name="appbase",
+    version="0.8.0",
     url="https://bitbucket.com/shon/appbase",
     classifiers=[
-        'Programming Language :: Python',
-        ],
+        "Programming Language :: Python",
+    ],
     include_package_data=True,
-    description='Helps develop python applications',
+    description="Helps develop python applications",
     long_description=open("README.rst").read(),
     packages=find_packages(),
     install_requires=[
-        'blinker',
-        'jsonschema',
-        'gevent',
-        'peewee',
-        'psycopg2',
-        'psycogreen',
-        'flask',
-        'html2text',
-        'redis',
-        'arnold',
-        'requests_oauthlib'
-      ],
-    author='Shekhar Tiwatne',
-    author_email='pythonic@gmail.com',
+        "blinker",
+        "jsonschema",
+        "gevent",
+        "peewee",
+        "psycopg2",
+        "psycogreen",
+        "flask",
+        "html2text",
+        "redis",
+        "arnold",
+        "requests_oauthlib",
+    ],
+    author="Shekhar Tiwatne",
+    author_email="pythonic@gmail.com",
     license="http://www.opensource.org/licenses/mit-license.php",
     test_suite="tests",
-    )
+)

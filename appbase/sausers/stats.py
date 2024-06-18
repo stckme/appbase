@@ -12,12 +12,12 @@ def count():
     return conn.execute(q).fetchone()[0]
 
 
-def groupby_created(precision='month'):
+def groupby_created(precision="month"):
     conn = sa.connect()
-    month = func.date_trunc('month', users.c.created).label('month')
-    q = select([month, func.count(users.c.id)]).group_by('month').order_by('month')
-    #return conn.execute(q).fetchall()
-    return [(dt.strftime('%b %Y'), num) for (dt, num) in conn.execute(q).fetchall()]
+    month = func.date_trunc("month", users.c.created).label("month")
+    q = select([month, func.count(users.c.id)]).group_by("month").order_by("month")
+    # return conn.execute(q).fetchall()
+    return [(dt.strftime("%b %Y"), num) for (dt, num) in conn.execute(q).fetchall()]
 
 
 def created_today():

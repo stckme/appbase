@@ -33,7 +33,8 @@ class FakeServer(smtpd.SMTPServer):
             self.RECIPIENT_COUNTER[recipient] = count
             filename = os.path.join(self.path, "%s.%s" % (recipient, count))
             filename = filename.replace("<", "").replace(">", "")
-            if self.exten: filename += self.exten
+            if self.exten:
+                filename += self.exten
             f = file(filename, "w")
             f.write(data + "\n")
             f.close()
@@ -47,13 +48,15 @@ def script_name():
 
 def usage():
     print(("Usage: %s [OPTIONS]" % script_name()))
-    print("""
+    print(
+        """
 OPTIONS
         --host=<localdomain>
         --port=<port number>
         --path=<path to save mails>
         --log=<optional file to append messages to>
-        --background""")
+        --background"""
+    )
 
 
 def quit(reason=None):
@@ -92,7 +95,8 @@ def read_command_line():
     global log_file
     try:
         optlist, args = getopt.getopt(
-            sys.argv[1:], "", ["host=", "port=", "path=", "log=", "background"])
+            sys.argv[1:], "", ["host=", "port=", "path=", "log=", "background"]
+        )
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -147,7 +151,7 @@ def main():
     if background:
         become_daemon()
     try:
-        server = FakeServer((host, port), None, path, '.eml')
+        server = FakeServer((host, port), None, path, ".eml")
     except socket.error as e:
         quit(str(e))
     message("Listening on port %d" % port)

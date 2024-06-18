@@ -17,21 +17,28 @@ from appbase.errors import SecurityViolation
 from appbase.users.model import User, GroupUser
 from appbase.helpers import gen_random_token
 from appbase.common import local_path
-from .errors import EmailExistsError, InvalidEmailError, EmailiDoesNotExistError, \
-    PasswordTooSmallError, InvalidTokenError, SendEmailError, AuthError
+from .errors import (
+    EmailExistsError,
+    InvalidEmailError,
+    EmailiDoesNotExistError,
+    PasswordTooSmallError,
+    InvalidTokenError,
+    SendEmailError,
+    AuthError,
+)
 
-SIGNUP_KEY_PREFIX = 'signup:'
-SIGNUP_LOOKUP_PREFIX = 'signuplookup:'
+SIGNUP_KEY_PREFIX = "signup:"
+SIGNUP_LOOKUP_PREFIX = "signuplookup:"
 SIGNUP_TTL = 2 * 7 * 24 * 60 * 60
 PASSWORD_RESET_TTL = 24 * 60 * 60
 rconn = redisutils.rconn
 
-user_created = signal('user.created')
+user_created = signal("user.created")
 
-qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
-dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]'
-atom = '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+'
-quoted_pair = '\\x5c[\\x00-\\x7f]'
+qtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]"
+dtext = "[^\\x0d\\x5b-\\x5d\\x80-\\xff]"
+atom = "[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+"
+quoted_pair = "\\x5c[\\x00-\\x7f]"
 domain_literal = "[\\x5b](?:%s|%s)*[\\x5d]" % (dtext, quoted_pair)
 quoted_string = "\\x22(?:%s|%s)*\\x22" % (qtext, quoted_pair)
 domain_ref = atom
@@ -41,7 +48,7 @@ domain = "%s(?:\\x2e%s)*" % (sub_domain, sub_domain)
 local_part = "%s(?:\\x2e%s)*" % (word, word)
 # Adding maximum length restrictions
 addr_spec = "(?=^.{1,256}$)(?=.{1,64}@)%s\\x40%s" % (local_part, domain)
-email_address = re.compile('^%s$' % addr_spec)
+email_address = re.compile("^%s$" % addr_spec)
 
 
 def validate_email(email):
@@ -68,12 +75,12 @@ def render_template(path, data):
 
 
 def welcome(email, data={}):
-    template_path = 'templates/welcome.txt'
+    template_path = "templates/welcome.txt"
     if not os.path.exists(local_path(template_path)):
         return
     text = render_template(template_path, data)
-    #html = render_template('users/templates/invite.html', data)
-    #images = [('signature', open('users/templates/logo.png').read())]
+    # html = render_template('users/templates/invite.html', data)
+    # images = [('signature', open('users/templates/logo.png').read())]
     sender = settings.WELCOME_SENDER
     recipient = email
     subject = settings.WELCOME_SUBJECT
@@ -82,9 +89,14 @@ def welcome(email, data={}):
 
 
 def invite(name, email):
-    data = dict(NAME=name, INVITER_NAME=settings.INVITER_NAME, INVITE_LINK=settings.INVITE_LINK, INVITER_EMAIL=settings.INVITER_EMAIL)
-    html = render_template('users/templates/invite.html', data)
-    sender = '{INVITER_NAME} <{INVITER_EMAIL}>'.format(**data)
+    data = dict(
+        NAME=name,
+        INVITER_NAME=settings.INVITER_NAME,
+        INVITE_LINK=settings.INVITE_LINK,
+        INVITER_EMAIL=settings.INVITER_EMAIL,
+    )
+    html = render_template("users/templates/invite.html", data)
+    sender = "{INVITER_NAME} <{INVITER_EMAIL}>".format(**data)
     appbase.helpers.send_email(sender, email, settings.INVITE_SUBJECT, html=html)
     return True
 
@@ -108,12 +120,18 @@ def signup(email, password, **kwargs):
         rconn.hmset(key, d)
         rconn.expire(key, SIGNUP_TTL)
     confirmation_link = settings.CONFIRMATION_LINK.format(TOKEN=token)
-    data = dict(CONFIRMATION_LINK=confirmation_link, SIGNUP_SENDER=settings.SIGNUP_SENDER, DOMAIN=settings.DOMAIN)
-    html = render_template('templates/confirmation.html', data)
+    data = dict(
+        CONFIRMATION_LINK=confirmation_link,
+        SIGNUP_SENDER=settings.SIGNUP_SENDER,
+        DOMAIN=settings.DOMAIN,
+    )
+    html = render_template("templates/confirmation.html", data)
     try:
-        appbase.helpers.send_email(settings.SIGNUP_SENDER, email, settings.SIGNUP_SUBJECT, html=html)
+        appbase.helpers.send_email(
+            settings.SIGNUP_SENDER, email, settings.SIGNUP_SUBJECT, html=html
+        )
     except Exception:
-        logging.exception('error while sending confirmation email: ')
+        logging.exception("error while sending confirmation email: ")
         raise SendEmailError()
     return True
 
@@ -127,13 +145,13 @@ def complete_signup(token, groups=None):
     if not data:
         raise InvalidTokenError()
     if groups:
-        data['groups'] = groups
+        data["groups"] = groups
     uid = create(**data)
     user = info(uid=uid)
-    return sessionslib.create(uid, user['groups'])
+    return sessionslib.create(uid, user["groups"])
 
 
-def encrypt(s, salt=''):
+def encrypt(s, salt=""):
     h = hashlib.sha256()
     h.update(s + salt)
     return h.hexdigest()
@@ -141,21 +159,21 @@ def encrypt(s, salt=''):
 
 # Placeholder code: should be replaced with proper validation decorator
 
-password_schema = {'type': 'string', 'minLength': 5}
-user_schema = {'type': 'object',
-               'properties': {
-                   'password': password_schema }
-               }
+password_schema = {"type": "string", "minLength": 5}
+user_schema = {"type": "object", "properties": {"password": password_schema}}
 
 from jsonschema import Draft4Validator
+
 
 def validate_password(password):
     v = Draft4Validator(password_schema)
     e = list(v.iter_errors(password))
-    if e and e[0].message.endswith('is too short'):
+    if e and e[0].message.endswith("is too short"):
         raise PasswordTooSmallError()
 
+
 # /Placeholder code
+
 
 def create(email, password=None, groups=None, name=None, connection=None):
     email = email.lower()
@@ -172,13 +190,19 @@ def create(email, password=None, groups=None, name=None, connection=None):
         raise EmailExistsError(email)
 
     created = datetime.datetime.now()
-    user = User.create(name=name, email=email, password=encpassword, created=created, groups=groups or [])
+    user = User.create(
+        name=name,
+        email=email,
+        password=encpassword,
+        created=created,
+        groups=groups or [],
+    )
     user.save()
 
     if groups:
         for gname in groups:
             GroupUser.create(user_id=user.id, group=gname)
-    #user_created.send(uid, email)
+    # user_created.send(uid, email)
     if settings.SEND_WELCOME_EMAIL:
         welcome(email)
     return user.id
@@ -186,14 +210,16 @@ def create(email, password=None, groups=None, name=None, connection=None):
 
 def info(email=None, uid=None):
     if email:
-        cond = (User.email == email.lower())
+        cond = User.email == email.lower()
     else:
-        cond = (User.id == uid)
-    user = User.select(User.name, User.id, User.active, User.created, User.groups).where(cond)[0]
+        cond = User.id == uid
+    user = User.select(
+        User.name, User.id, User.active, User.created, User.groups
+    ).where(cond)[0]
     return playhouse.shortcuts.model_to_dict(user)
 
 
-def authenticate(email, password='', _oauthed=False):
+def authenticate(email, password="", _oauthed=False):
     """
     returns session if successful else returns None
     """
@@ -204,11 +230,13 @@ def authenticate(email, password='', _oauthed=False):
     if not user:
         raise EmailiDoesNotExistError(email)
     if _oauthed:
-        return sessionslib.create(user.id, user.groups,
-                                  extras={'email': email, 'name': user.name})
+        return sessionslib.create(
+            user.id, user.groups, extras={"email": email, "name": user.name}
+        )
     if user.password == encrypt(password, settings.SALT):
-        return sessionslib.create(user.id, user.groups,
-                                  extras={'email': email, 'name': user.name})
+        return sessionslib.create(
+            user.id, user.groups, extras={"email": email, "name": user.name}
+        )
     raise AuthError(email)
 
 
@@ -222,11 +250,11 @@ def set_user_context(uid=None, email=None):
 
 
 def edit(uid, mod_data):
-    editables = set(['name', 'email', 'password'])
+    editables = set(["name", "email", "password"])
     if not editables.issuperset(mod_data.keys()):
         raise SecurityViolation()
-    if 'password' in mod_data:
-        mod_data['password'] = encrypt(mod_data['password'], settings.SALT)
+    if "password" in mod_data:
+        mod_data["password"] = encrypt(mod_data["password"], settings.SALT)
     q = Users.update(**mod_data).where(User.id == uid)
     q.execute()
     return True
@@ -250,24 +278,29 @@ def uid_by_email(email):
     if user:
         return user.id
 
-PASSRESET_PREFIX = 'passreset:'
+
+PASSRESET_PREFIX = "passreset:"
 
 
 def request_reset_password(email):
-    existing_keys = rconn.get(PASSRESET_PREFIX + email + '*')
+    existing_keys = rconn.get(PASSRESET_PREFIX + email + "*")
     if not existing_keys:
         token = gen_random_token()
-        key = '{prefix}{email}:{token}'.format(prefix=PASSRESET_PREFIX, email=email, token=token)
+        key = "{prefix}{email}:{token}".format(
+            prefix=PASSRESET_PREFIX, email=email, token=token
+        )
         key = existing_keys[0]
-        rconn.set(key, '')
+        rconn.set(key, "")
         rconn.expire(key, PASSWORD_RESET_TTL)
     else:
         key = existing_keys[0]
-        token = key.split(':')[-1]
+        token = key.split(":")[-1]
     reset_link = settings.PASSWORD_RESET_LINK.format(TOKEN=token)
     data = dict(PASSWORD_RESET_LINK=reset_link, SENDER=settings.RESET_PASSWORD_SENDER)
-    html = render_template('users/templates/password_reset.html', data)
-    appbase.helpers.send_email(settings.SIGNUP_SENDER, email, 'Password reset', html=html)
+    html = render_template("users/templates/password_reset.html", data)
+    appbase.helpers.send_email(
+        settings.SIGNUP_SENDER, email, "Password reset", html=html
+    )
     return True
 
 

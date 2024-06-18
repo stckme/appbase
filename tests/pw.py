@@ -8,9 +8,10 @@ import appbase.bootstrap as bootstrap
 from appbase.publishers import dbtransaction
 import appbase.pw as pw
 
-logger = logging.getLogger('peewee')
+logger = logging.getLogger("peewee")
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
+
 
 class SomeThing(pw.BaseModel):
     name = CharField()
@@ -20,12 +21,12 @@ themodels = [SomeThing]
 
 
 def create():
-    return SomeThing.create(name='some name')
+    return SomeThing.create(name="some name")
 
 
 def create_err():
     create()
-    raise Exception('Test Exception')
+    raise Exception("Test Exception")
 
 
 t_create = dbtransaction(create)

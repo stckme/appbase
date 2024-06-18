@@ -1,4 +1,5 @@
 import datetime
+
 try:
     import _pickle as pickle
 except:
@@ -12,11 +13,11 @@ from functools import wraps
 from appbase.helpers import notify_dev, make_key_from_params
 from settings import REDIS_HOST, REDIS_PORT, REDIS_DB
 
-#TODO: Move below settings to settings/converge
-NOTIFICATION_GAP = datetime.timedelta(0, (10*60))
+# TODO: Move below settings to settings/converge
+NOTIFICATION_GAP = datetime.timedelta(0, (10 * 60))
 CACHE_TTL = 3 * 7 * 24 * 60 * 60
 
-# Not using decode_responses=True, 
+# Not using decode_responses=True,
 # because pickle generates binary serialization format which doesn't have decode method
 rconn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
@@ -29,6 +30,7 @@ def failsafe(f):
     And in case of error it will return the previously saved output and will notify dev about error.
     """
     f.last_notified_at = datetime.datetime.now() - NOTIFICATION_GAP
+
     @wraps(f)
     def wrapper(*args, **kw):
         key = make_key_from_params(f.__name__, args, kw, strict=True)
@@ -45,4 +47,5 @@ def failsafe(f):
             dump = rconn.get(key)
             result = pickle.loads(dump) if dump else None
         return result
+
     return wrapper
