@@ -2,10 +2,11 @@ from setuptools import find_packages, setup
 
 setup(
     name="appbase",
-    version="0.8.0",
-    url="https://bitbucket.com/shon/appbase",
+    version="0.8.1",
+    url="https://github.com/stckme/appbase",
     classifiers=[
         "Programming Language :: Python",
+        "License :: OSI Approved :: MIT License",
     ],
     include_package_data=True,
     description="Helps develop python applications",
@@ -26,6 +27,5 @@ setup(
     ],
     author="Shekhar Tiwatne",
     author_email="pythonic@gmail.com",
-    license="http://www.opensource.org/licenses/mit-license.php",
     test_suite="tests",
 )
