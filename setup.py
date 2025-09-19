@@ -17,7 +17,7 @@ setup(
         "jsonschema",
         "gevent",
         "peewee",
-        "psycopg2",
+        "psycopg2-binary",
         "psycogreen",
         "flask",
         "html2text",
